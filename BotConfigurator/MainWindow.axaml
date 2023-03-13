@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        MinWidth="600"
+        x:Class="BotConfigurator.MainWindow"
+        Title="BotConfigurator"
+        Icon="avares://BotConfigurator/Resource/icon.jpg">
+  <Window.Background>
+    <ImageBrush Source="avares://BotConfigurator/Resource/DruidBalance.jpg" Opacity="0.6" Stretch="UniformToFill"></ImageBrush>
+  </Window.Background>
+
+  <Panel>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Border x:Name="ReferenceBorder"/>
+      <Border Grid.Column="1" />
+      <Border Grid.Column="2" />
+    </Grid>
+
+    <TextBlock Name="OpenConfigTxt" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Text="Open a config file to begin"></TextBlock>
+
+    <Panel Width="{Binding
+             ElementName=ReferenceBorder, Path=ActualWidth}" Height="70" VerticalAlignment="Top">
+      <Panel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20" Width="{Binding
+             ElementName=ReferenceBorder, Path=ActualWidth}">
+        <Button Name="OpenConfigBtn" Click="OpenConfigBtn_click" Margin="0, 0, 75, 0" FontWeight="Bold">Open Config</Button>
+      </Panel>
+      <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Name="ExpansionTxt" FontWeight="Bold" Text=""></TextBlock>
+
+      <Panel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20" Width="{Binding
+             ElementName=ReferenceBorder, Path=ActualWidth}">
+        <TextBlock Name="SaveSuccessTxt" Margin="0,5,0,0"></TextBlock>
+        <Button Name="SaveConfigBtn" Click="SaveConfigBtn_click" Margin="185, 0, 0, 0" FontWeight="Bold" HorizontalAlignment="Right">Save</Button>
+      </Panel>
+    </Panel>
+
+    <ScrollViewer Name="ScrollViewer" Margin="0,70,0,0" MaxWidth="1200" VerticalScrollBarVisibility="Auto">
+      <Grid Name="ConfigDataGrid" Margin="20,50,20,20">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="25"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+      </Grid>
+    </ScrollViewer>
+
+
+  </Panel>
+
+</Window>
