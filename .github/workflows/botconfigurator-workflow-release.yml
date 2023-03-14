@@ -1,0 +1,101 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Build and publish BotConfigurator
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+
+env:
+  DOTNET_VERSION: '7.0.x'
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        os: ['windows', 'ubuntu']
+    runs-on: ${{ matrix.os }}-latest
+
+    steps:
+      - name: Checkout repository content
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Publish
+        if: matrix.os != 'macos'
+        run: dotnet publish --configuration Release --use-current-runtime -p:UsePublishBuildSettings=true
+
+      - name: Mark as executable
+        if: matrix.os != 'windows'
+        run: chmod a+x /home/runner/work/BotConfigurator/BotConfigurator/BotConfigurator/bin/Release/net7.0/linux-x64/publish/BotConfigurator
+        
+      - name: Zip build (Windows)
+        if: matrix.os == 'windows'
+        run: |
+          $sourceDir = '${{ github.workspace }}\BotConfigurator\bin\Release\net7.0\win-x64\publish'
+          $destDir = '${{ github.workspace }}\BotConfigurator\bin\Release\net7.0\win-x64\publish'
+          Compress-Archive -Path $sourceDir -DestinationPath "$destDir/BotConfigurator-${{ matrix.os }}-${{ runner.arch }}.zip"
+
+      - name: Make a tar.gz with permissions (for Linux)
+        if: matrix.os == 'ubuntu'
+        run: |
+          mv /home/runner/work/BotConfigurator/BotConfigurator/BotConfigurator/bin/Release/net7.0/linux-x64/publish BotConfigurator-${{ matrix.os }}-${{ runner.arch }}
+          tar -czvf BotConfigurator-${{ matrix.os }}-${{ runner.arch }}.tar.gz BotConfigurator-${{ matrix.os }}-${{ runner.arch }}
+#      - name: Upload build artifact (Windows)
+#        if: matrix.os == 'windows'
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: BotConfigurator-${{ matrix.os }}-${{ runner.arch }}
+#          path: D:\a\BotConfigurator\BotConfigurator\BotConfigurator\bin\Release\net7.0\win-x64\publish\
+#          if-no-files-found: error
+
+#      - name: Upload build artifact (Linux)
+#        if: matrix.os == 'ubuntu'
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: BotConfigurator-${{ matrix.os }}-${{ runner.arch }}
+#          path: BotConfigurator-${{ matrix.os }}-${{ runner.arch }}.*
+#          if-no-files-found: error
+          
+      - name: Get current date
+        id: date
+        run: |
+          echo "::set-output name=date::$(date -u +'%Y-%m-%d')"
+        shell: bash
+          
+      - name: Upload release (Windows)
+        if: matrix.os == 'windows'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          release_name: "Release (${{ steps.date.outputs.date }})"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          file_glob: false
+          file: D:/a/BotConfigurator/BotConfigurator/BotConfigurator/bin/Release/net7.0/win-x64/publish/BotConfigurator-${{ matrix.os }}-${{ runner.arch }}.zip
+          tag: ${{ steps.date.outputs.date }}
+          overwrite: true
+          
+      - name: Upload release (Linux)
+        if: matrix.os == 'ubuntu'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          release_name: "Release (${{ steps.date.outputs.date }})"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          file_glob: true
+          file: BotConfigurator-${{ matrix.os }}-${{ runner.arch }}.*
+          tag: ${{ steps.date.outputs.date }}
+          overwrite: true
