@@ -198,8 +198,8 @@ namespace BotConfigurator
             OpenFileDialog ofd = new OpenFileDialog
             {
                 Title = "Open Bot .conf file",
-                /*CHANGE THIS BACK*/ InitialDirectory = "C:\\Users\\todor\\OneDrive\\Work\\source\\repos\\#RND\\BotConfigTest\\",//AppDomain.CurrentDomain.BaseDirectory,
-                Filters = new List<FileDialogFilter> { new FileDialogFilter { Name = "Conf files", Extensions = new List<string> { "conf" } } }
+                InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                Filters = new List<FileDialogFilter> { new FileDialogFilter { Name = ".conf files", Extensions = new List<string> { "conf" } } }
             };
 
             var result = await ofd.ShowAsync(this);
