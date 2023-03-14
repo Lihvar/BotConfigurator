@@ -1,0 +1,53 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Build and publish BotConfigurator
+
+on:
+  push:
+    branches: [ "actions-test" ]
+  pull_request:
+    branches: [ "actions-test" ]
+
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [win-x64, linux-x64]
+        dotnet-version: ['7.0.x']
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Pack
+        run: dotnet publish --configuration Release --output ./publish --no-restore --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:TieredCompilation=false /p:TieredCompilationQuickJit=false /p:TieredCompilationQuickJitForLoops=false /p:TieredCompilationQuickJitAtTier0=false /p:TieredCompilationQuickJitAtTier1=false /p:TieredCompilationCallCountThreshold=0 /p:TieredCompilationCallCounting=false /p:TieredCompilationBackwardBranchThrottling=false /p:TieredCompilationControlFlowGuardInstrumentation=false /p:TieredCompilationControlFlowGuardInstrumentationTarget=0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000000000000000000000000000000ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ffffffffff00ff
+      - name: Zip files
+        run: Compress-Archive -Path ./publish/* -DestinationPath ./BotConfigurator-${{ matrix.os }}.zip
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./BotConfigurator-${{ matrix.os }}.zip 
+          asset_name: BotConfigurator-${{ matrix.os }}.zip 
+          asset_content_type: application/zip
